@@ -1,9 +1,9 @@
 package com.netopstec.spiderzhihu.json;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class FollowerListPage {
-    Paging paging;
-    List<UserInfo> data;
+public class FollowInfo {
+    private Paging paging;
+    private List<UserInfo> data;
 }
