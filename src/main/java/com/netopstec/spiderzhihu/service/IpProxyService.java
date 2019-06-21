@@ -100,4 +100,29 @@ public class IpProxyService {
         }
         return isActive;
     }
+
+    /**
+     * 获取一条可用的代理
+     * @return 可用的代理
+     */
+    public IpProxy getActiveProxyIp() {
+        IpProxy activeProxyIp = null;
+        List<IpProxy> ipProxyList = ipProxyRepository.findAll();
+        List<IpProxy> inactiveIpProxyList = new ArrayList<>();
+        for (int i = 0; i < ipProxyList.size(); i++) {
+            IpProxy ipProxy = ipProxyList.get(i);
+            boolean isActive = checkIpProxyIsActive(ipProxy);
+            if (isActive) {
+                activeProxyIp = ipProxy;
+                break;
+            } else {
+                inactiveIpProxyList.add(ipProxy);
+            }
+        }
+        if (inactiveIpProxyList.size() > 0) {
+            log.info("检测到有{}条不可用的代理，清除这些不可用的代理。", inactiveIpProxyList.size());
+            ipProxyRepository.deleteInBatch(inactiveIpProxyList);
+        }
+        return activeProxyIp;
+    }
 }
