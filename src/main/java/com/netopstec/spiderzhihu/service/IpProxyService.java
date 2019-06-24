@@ -13,7 +13,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author zhenye 2019/6/21
@@ -28,10 +27,8 @@ public class IpProxyService {
     /**
      * 保存可用的免费代理IP
      * @param proxyIpList
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
-    public void saveActiveProxyIpList(List<IpProxy> proxyIpList) throws ExecutionException, InterruptedException {
+    public void saveActiveProxyIpList(List<IpProxy> proxyIpList) {
         if (proxyIpList.size() == 0) {
             return;
         }
@@ -42,9 +39,14 @@ public class IpProxyService {
                activeIpProxyList.add(ipProxy);
            }
         }
-        log.info("本次爬取的可用代理IP数为：{}", activeIpProxyList.size());
         if (activeIpProxyList.size() > 0) {
-            ipProxyRepository.saveAll(activeIpProxyList);
+            for (IpProxy ipProxy : activeIpProxyList) {
+                List<IpProxy> existedIpProxy = ipProxyRepository.findByIpAndPort(ipProxy.getIp(), ipProxy.getPort());
+                if (existedIpProxy.size() == 0) {
+                    log.info("代理{}:{}可用，新增一条代理记录", ipProxy.getIp(), ipProxy.getPort());
+                    ipProxyRepository.save(ipProxy);
+                }
+            }
         }
     }
 
@@ -96,7 +98,7 @@ public class IpProxyService {
         if (isActive) {
             log.info("代理{}:{}可用", ip, port);
         } else {
-            log.error("代理{}:{}不可用", ip, port);
+            log.info("代理{}:{}不可用", ip, port);
         }
         return isActive;
     }

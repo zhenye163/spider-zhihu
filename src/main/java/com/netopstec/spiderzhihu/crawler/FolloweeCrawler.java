@@ -2,12 +2,10 @@ package com.netopstec.spiderzhihu.crawler;
 
 import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
-import cn.wanghaomiao.seimi.spring.common.CrawlerCache;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
-import com.netopstec.spiderzhihu.domain.IpProxy;
-import com.netopstec.spiderzhihu.domain.User;
-import com.netopstec.spiderzhihu.domain.UserRepository;
+import com.netopstec.spiderzhihu.constant.Constants;
+import com.netopstec.spiderzhihu.domain.*;
 import com.netopstec.spiderzhihu.json.FollowInfo;
 import com.netopstec.spiderzhihu.json.UserInfo;
 import com.netopstec.spiderzhihu.service.IpProxyService;
@@ -15,21 +13,26 @@ import com.netopstec.spiderzhihu.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.seimicrawler.xpath.JXDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 爬取被关注者信息的爬虫类（“excited-vczh”关注的用户信息）
+ * 爬取被关注者信息的爬虫类（$rootName关注的用户信息）
  * @author zhenye 2019/6/20
  */
 @Slf4j
 @Crawler(name = "user-followee-crawler")
 public class FolloweeCrawler extends BaseSeimiCrawler{
 
+    @Value("${zhihu.root.name}")
+    private String rootName;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private FollowerRelationRepository followerRelationRepository;
     @Autowired
     private IpProxyService ipProxyService;
 
@@ -44,16 +47,30 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
         return super.proxy();
     }
 
+    @Override
+    public String getUserAgent() {
+        return Constants.refreshMyUserAgent();
+    }
+
     private static Integer LIMIT = 20;
     private static Integer OFFSET = 0;
 
     @Override
     public String[] startUrls() {
-        return new String[]{"https://www.zhihu.com/api/v4/members/excited-vczh/followees?limit=20&offset=0"};
+        if (rootName == null || "".equals(rootName)) {
+            return null;
+        }
+        log.info("正在爬取{}关注的知乎用户信息...", rootName);
+        return new String[]{"https://www.zhihu.com/api/v4/members/" + rootName +"/followees?limit=20&offset=0"};
     }
 
     @Override
     public void start(Response response) {
+        User followerUser = userRepository.findUserByUrlToken(rootName);
+        if (followerUser == null) {
+            log.error("要预先保存{}的用户信息，否则无法保证关联的关注关系", rootName);
+            return;
+        }
         JXDocument document = response.document();
         String followeeListJson = document.selN("body").get(0).asElement().text();
         FollowInfo followInfo = JsonUtil.string2Obj(followeeListJson, FollowInfo.class);
@@ -80,21 +97,21 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
                 .filter(user -> !duplicateZhihuUserIdList.contains(user.getZhihuUserId()))
                 .collect(Collectors.toList());
         log.info("本次要保存用户信息的知乎用户总数量为：" + thisTimeToAddUserList.size());
-        userRepository.saveAll(thisTimeToAddUserList);
-
+        for (User user : thisTimeToAddUserList) {
+            User followeeUser = userRepository.save(user);
+            FollowerRelation followerRelation = new FollowerRelation();
+            followerRelation.setFollowerId(followerUser.getId());
+            followerRelation.setFolloweeId(followeeUser.getId());
+            followerRelationRepository.save(followerRelation);
+        }
         Integer hasGetTotal = FolloweeCrawler.OFFSET + FolloweeCrawler.LIMIT;
         if (hasGetTotal < totals) {
             log.info("已经爬取的数据条数{}，需要爬取的数据条数{}，因此还需要爬取下一页的数据", hasGetTotal, totals);
             FolloweeCrawler.OFFSET += FolloweeCrawler.LIMIT;
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                log.error("阻塞线程时出错");
-            }
-            // 间隔0.5秒后，再爬取下一页的数据（反正IP被封）
+            // 这里可以间隔0.5秒后，再爬取下一页的数据（防止IP被封）
             saveNextPageFolloweeInfo();
         } else {
-            log.info("已经爬取完所有数据...");
+            log.info("已经爬取完{}关注的所有知乎用户的信息...", rootName);
         }
     }
 
@@ -102,10 +119,8 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
      * 爬取下一页的被关注者信息
      */
     private void saveNextPageFolloweeInfo() {
-        String url = "https://www.zhihu.com/api/v4/members/excited-vczh/followees?limit=" + FolloweeCrawler.LIMIT + "&offset=" + FolloweeCrawler.OFFSET;
-        Request request = new Request(url, "start");
+        String url = "https://www.zhihu.com/api/v4/members/" + rootName + "/followees?limit=" + FolloweeCrawler.LIMIT + "&offset=" + FolloweeCrawler.OFFSET;
+        Request request = Request.build(url, "start");
         push(request);
-        request.setCrawlerName("user-followee-crawler");
-        CrawlerCache.consumeRequest(request);
     }
 }

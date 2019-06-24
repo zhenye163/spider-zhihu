@@ -12,4 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByZhihuUserId(String zhihuUserId);
 
     List<User> findByZhihuUserIdIn(List<String> zhihuUserIdList);
+
+    User findUserByUrlToken(String rootName);
 }

@@ -6,6 +6,7 @@ import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.netopstec.spiderzhihu.domain.IpProxy;
 import com.netopstec.spiderzhihu.service.IpProxyService;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.select.Elements;
 import org.seimicrawler.xpath.JXDocument;
 import org.seimicrawler.xpath.JXNode;
@@ -14,13 +15,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * 爬取可免费代理的服务器IP地址的爬虫类
  * @author zhenye 2019/6/20
  */
-@Crawler(name = "ipProxy-crawler")
+@Slf4j
+@Crawler(name = "ipProxy-crawler", useUnrepeated = false)
 public class IpProxyCrawler extends BaseSeimiCrawler {
 
     @Autowired
@@ -61,11 +62,7 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
             proxyIpList.add(ipProxy);
         }
         // 测试这些代理IP是否可用；如果可用，则刷新数据库中的备用代理IP
-        try {
-            ipProxyService.saveActiveProxyIpList(proxyIpList);
-        } catch (ExecutionException | InterruptedException e) {
-            logger.error("多线程异常");
-        }
+         ipProxyService.saveActiveProxyIpList(proxyIpList);
     }
 
     /**
@@ -73,16 +70,16 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
      */
     @Scheduled(cron = "0 */10 * * * ?")
     public void intervalAddActiveProxyIp() {
-        logger.info("基于Spring提供的调度任务，新增可用的代理IP");
+        log.info("基于Spring提供的调度任务，新增可用的代理IP");
         push(Request.build("https://www.xicidaili.com/wt/", IpProxyCrawler::start));
     }
 
     /**
-     * 基于Spring提供的调用
+     * 基于Spring提供的调度任务，每个小时开头删除无用的代理IP
      */
     @Scheduled(cron = "0 0 * * * ?")
     public void intervalRemoveInactiveProxyIp () {
-        logger.info("基于Spring提供的调度任务，删除不可用的代理IP");
+        log.info("基于Spring提供的调度任务，删除不可用的代理IP");
         ipProxyService.deleteInactiveProxyIpList();
     }
 }

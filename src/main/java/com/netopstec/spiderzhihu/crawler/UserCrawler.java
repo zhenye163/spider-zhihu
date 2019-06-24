@@ -9,20 +9,23 @@ import com.netopstec.spiderzhihu.json.UserInfo;
 import com.netopstec.spiderzhihu.util.JsonUtil;
 import org.seimicrawler.xpath.JXDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
- * 爬取知乎用户信息的爬虫类
+ * 爬取知乎用户信息$rootName的爬虫类
  * @author zhenye 2019/6/20
  */
 @Crawler(name = "user-crawler")
 public class UserCrawler extends BaseSeimiCrawler{
 
+    @Value("${zhihu.root.name}")
+    private String rootName;
     @Autowired
     private UserRepository userRepository;
 
     @Override
     public String[] startUrls() {
-        return new String[]{"https://www.zhihu.com/api/v4/members/excited-vczh"};
+        return new String[]{"https://www.zhihu.com/api/v4/members/" + rootName};
     }
 
     @Override
