@@ -37,7 +37,7 @@ public class UserCrawler extends BaseSeimiCrawler{
         String zhihuUserInfoJson = document.selN("body").get(0).asElement().text();
         UserInfo userInfo = JsonUtil.string2Obj(zhihuUserInfoJson, UserInfo.class);
         User user = UserInfo.toEntity(userInfo);
-        User duplicateUser  = userRepository.findByZhihuUserId(user.getZhihuUserId());
+        User duplicateUser  = userRepository.findByUrlToken(user.getUrlToken());
         // 每个知乎用户有唯一的id和url_token，这里用id进行去重
         if (duplicateUser == null) {
             userRepository.save(user);

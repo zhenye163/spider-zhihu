@@ -14,14 +14,12 @@ import lombok.ToString;
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserInfo {
-    private String id;
     private String name;
     private String url_token;
 
 
     public static User toEntity(UserInfo userInfo) {
         User user = new User();
-        user.setZhihuUserId(userInfo.getId());
         user.setName(userInfo.getName());
         user.setUrlToken(userInfo.getUrl_token());
         return user;

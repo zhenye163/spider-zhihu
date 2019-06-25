@@ -13,8 +13,6 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name="zhihu_user_id", unique=true)
-    private String zhihuUserId;
     private String name;
     private String urlToken;
 }

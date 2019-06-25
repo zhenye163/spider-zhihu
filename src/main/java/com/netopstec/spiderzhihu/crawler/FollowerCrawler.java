@@ -68,7 +68,7 @@ public class FollowerCrawler extends BaseSeimiCrawler {
 
     @Override
     public void start(Response response) {
-        User followeeUser = userRepository.findUserByUrlToken(rootName);
+        User followeeUser = userRepository.findByUrlToken(rootName);
         if (followeeUser == null) {
             log.error("要预先保存[{}]的用户信息，否则无法保证关联的关注关系", rootName);
             return;
@@ -89,16 +89,16 @@ public class FollowerCrawler extends BaseSeimiCrawler {
             User user = UserInfo.toEntity(userInfo);
             userList.add(user);
         }
-        // 很明显的，每个知乎用户的有唯一的zhihu_user_id和url_token。因此入库之前需要去重（以zhihu_user_id过滤即可）。
-        List<String> zhihuUserIdList = userList.stream()
-                .map(User::getZhihuUserId)
+        // 很明显的，每个知乎用户有自己唯一的url_token。去重
+        List<String> urlTokenList = userList.stream()
+                .map(User::getUrlToken)
                 .collect(Collectors.toList());
-        List<User> duplicateUserList = userRepository.findByZhihuUserIdIn(zhihuUserIdList);
-        List<String> duplicateZhihuUserIdList = duplicateUserList.stream()
-                .map(User::getZhihuUserId)
+        List<User> duplicateUserList = userRepository.findByUrlTokenIn(urlTokenList);
+        List<String> duplicateUrlTokenList = duplicateUserList.stream()
+                .map(User::getUrlToken)
                 .collect(Collectors.toList());
         List<User> thisTimeToAddUserList = userList.stream()
-                .filter(user -> !duplicateZhihuUserIdList.contains(user.getZhihuUserId()))
+                .filter(user -> !duplicateUrlTokenList.contains(user.getUrlToken()))
                 .collect(Collectors.toList());
         log.info("本次要保存用户信息的知乎用户总数量为：" + thisTimeToAddUserList.size());
         for (User user : thisTimeToAddUserList) {

@@ -9,9 +9,7 @@ import java.util.List;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User findByZhihuUserId(String zhihuUserId);
+    List<User> findByUrlTokenIn(List<String> urlTokenList);
 
-    List<User> findByZhihuUserIdIn(List<String> zhihuUserIdList);
-
-    User findUserByUrlToken(String rootName);
+    User findByUrlToken(String urlToken);
 }
