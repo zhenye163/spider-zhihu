@@ -17,6 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 使用代理的策略需要改变：
+ * 1. 在项目启动的时候，使用多线程从西次代理中爬取足够多的可用代理！（20页过滤出可用代理）
+ * 2. 获取代理爬取别的资源时，直接从数据库中拿数据即可，报错503时切换另外一条可用代理。
+ *
+ * 原因：
+ * 1. `proxy()`方法会调用两次，在这里获取代理时还对代理的可用性进行检验的话，爬取速率极低；
+ * 2. 免费代理的数量太少了，而且基本都是在短时间内就会失效。删除了无效代理后，可用代理池代理
+ * 数目很快就会变为0，因此需要调整线程池的维护。
+ *
  * 爬取可免费代理的服务器IP地址的爬虫类
  * @author zhenye 2019/6/20
  */
@@ -34,6 +43,7 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
 
     @Override
     public void start(Response response) {
+        log.info("正在爬取代理IP...");
         JXDocument jxDocument = response.document();
         JXNode node = jxDocument.selNOne("//*[@id=\"ip_list\"]");
         Elements ipProxyList = node.asElement().children().get(0).children();
