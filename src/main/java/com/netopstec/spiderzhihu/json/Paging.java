@@ -1,5 +1,6 @@
 package com.netopstec.spiderzhihu.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,10 +11,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Paging {
-    private Boolean is_end;
     private Long totals;
-    private String previous;
-    private Boolean is_start;
-    private String next;
 }

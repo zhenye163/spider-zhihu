@@ -43,7 +43,7 @@ public class IpProxyService {
             for (IpProxy ipProxy : activeIpProxyList) {
                 List<IpProxy> existedIpProxy = ipProxyRepository.findByIpAndPort(ipProxy.getIp(), ipProxy.getPort());
                 if (existedIpProxy.size() == 0) {
-                    log.info("代理{}:{}可用，新增一条代理记录", ipProxy.getIp(), ipProxy.getPort());
+                    log.info("代理[{}:{}]可用，新增一条代理记录", ipProxy.getIp(), ipProxy.getPort());
                     ipProxyRepository.save(ipProxy);
                 }
             }
@@ -95,11 +95,6 @@ public class IpProxyService {
                 connection.disconnect();
             }
         }
-        if (isActive) {
-            log.info("代理{}:{}可用", ip, port);
-        } else {
-            log.info("代理{}:{}不可用", ip, port);
-        }
         return isActive;
     }
 
@@ -122,7 +117,7 @@ public class IpProxyService {
             }
         }
         if (inactiveIpProxyList.size() > 0) {
-            log.info("检测到有{}条不可用的代理，清除这些不可用的代理。", inactiveIpProxyList.size());
+            log.info("检测到有[{}]条不可用的代理，清除这些不可用的代理。", inactiveIpProxyList.size());
             ipProxyRepository.deleteInBatch(inactiveIpProxyList);
         }
         return activeProxyIp;
