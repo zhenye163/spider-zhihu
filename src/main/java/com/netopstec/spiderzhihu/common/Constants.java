@@ -1,4 +1,4 @@
-package com.netopstec.spiderzhihu.constant;
+package com.netopstec.spiderzhihu.common;
 
 import java.util.Random;
 

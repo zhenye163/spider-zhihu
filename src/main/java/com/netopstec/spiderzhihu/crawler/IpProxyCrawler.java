@@ -5,6 +5,7 @@ import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.netopstec.spiderzhihu.domain.IpProxy;
+import com.netopstec.spiderzhihu.domain.IpProxyRepository;
 import com.netopstec.spiderzhihu.service.IpProxyService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.select.Elements;
@@ -35,6 +36,10 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
 
     @Autowired
     private IpProxyService ipProxyService;
+    @Autowired
+    private IpProxyRepository ipProxyRepository;
+
+    private static Integer pageNum = 1;
 
     @Override
     public String[] startUrls() {
@@ -43,7 +48,7 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
 
     @Override
     public void start(Response response) {
-        log.info("正在爬取代理IP...");
+        log.info("正在爬取西刺免费代理第{}页的代理IP...", pageNum);
         JXDocument jxDocument = response.document();
         JXNode node = jxDocument.selNOne("//*[@id=\"ip_list\"]");
         Elements ipProxyList = node.asElement().children().get(0).children();
@@ -71,23 +76,24 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
 
             proxyIpList.add(ipProxy);
         }
-        // 测试这些代理IP是否可用；如果可用，则刷新数据库中的备用代理IP
-         ipProxyService.saveActiveProxyIpList(proxyIpList);
-    }
-
-    /**
-     * 基于Spring提供的调度任务，每第[0,10,20,30,40,50]分钟新增可用代理IP
-     */
-    @Scheduled(cron = "0 */10 * * * ?")
-    public void intervalAddActiveProxyIp() {
-        log.info("基于Spring提供的调度任务，新增可用的代理IP");
-        push(Request.build("https://www.xicidaili.com/wt/", IpProxyCrawler::start));
+        ipProxyService.batchAddIpProxy(proxyIpList);
+        if (pageNum < 20) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                log.error("线程阻塞异常...");
+            }
+            pageNum++;
+            push(Request.build("https://www.xicidaili.com/wt/" + pageNum, IpProxyCrawler::start));
+        } else {
+            log.info("已经爬取完前20页的所有西刺免费代理");
+        }
     }
 
     /**
      * 基于Spring提供的调度任务，每个小时开头删除无用的代理IP
      */
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void intervalRemoveInactiveProxyIp () {
         log.info("基于Spring提供的调度任务，删除不可用的代理IP");
         ipProxyService.deleteInactiveProxyIpList();

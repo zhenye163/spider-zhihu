@@ -5,6 +5,7 @@ import com.netopstec.spiderzhihu.domain.IpProxyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -25,35 +26,30 @@ public class IpProxyService {
     private IpProxyRepository ipProxyRepository;
 
     /**
-     * 保存可用的免费代理IP
-     * @param proxyIpList
+     * 批量新增代理IP
      */
-    public void saveActiveProxyIpList(List<IpProxy> proxyIpList) {
+    @Transactional(rollbackFor = Exception.class)
+    public void batchAddIpProxy(List<IpProxy> proxyIpList) {
         if (proxyIpList.size() == 0) {
             return;
         }
-        List<IpProxy> activeIpProxyList = new ArrayList<>();
+        List<IpProxy> existedIpProxyList = ipProxyRepository.findAll();
+        List<IpProxy> actualToAddIpProxyList = new ArrayList<>();
         for (IpProxy ipProxy : proxyIpList) {
-           boolean isActive = checkIpProxyIsActive(ipProxy);
-           if (isActive) {
-               activeIpProxyList.add(ipProxy);
-           }
-        }
-        if (activeIpProxyList.size() > 0) {
-            for (IpProxy ipProxy : activeIpProxyList) {
-                List<IpProxy> existedIpProxy = ipProxyRepository.findByIpAndPort(ipProxy.getIp(), ipProxy.getPort());
-                if (existedIpProxy.size() == 0) {
-                    log.info("代理[{}:{}]可用，新增一条代理记录", ipProxy.getIp(), ipProxy.getPort());
-                    ipProxyRepository.save(ipProxy);
-                }
+            boolean notNeedToAdd = existedIpProxyList.stream()
+                    .anyMatch(existedIpProxy -> ipProxy.getIp().equals(existedIpProxy.getIp()) && ipProxy.getPort().equals(existedIpProxy.getPort()));
+            if (!notNeedToAdd) {
+                actualToAddIpProxyList.add(ipProxy);
             }
         }
+        ipProxyRepository.saveAll(actualToAddIpProxyList);
     }
 
     /**
      * 删除不可用的免费代理IP
      */
     public void deleteInactiveProxyIpList() {
+        // todo 这里需要改成多线程的方式校验并删除不可用的代理，否则效率太低
         List<IpProxy> ipProxyList = ipProxyRepository.findAll();
         List<IpProxy> inactiveIpProxyList = new ArrayList<>();
         for (IpProxy ipProxy : ipProxyList) {

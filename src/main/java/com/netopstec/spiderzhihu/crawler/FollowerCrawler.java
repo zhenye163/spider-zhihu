@@ -4,7 +4,7 @@ import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
-import com.netopstec.spiderzhihu.constant.Constants;
+import com.netopstec.spiderzhihu.common.Constants;
 import com.netopstec.spiderzhihu.domain.*;
 import com.netopstec.spiderzhihu.json.FollowInfo;
 import com.netopstec.spiderzhihu.json.UserInfo;
