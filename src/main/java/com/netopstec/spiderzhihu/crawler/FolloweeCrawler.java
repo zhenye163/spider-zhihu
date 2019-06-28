@@ -4,7 +4,7 @@ import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
-import com.netopstec.spiderzhihu.common.Constants;
+import com.netopstec.spiderzhihu.common.HttpConstants;
 import com.netopstec.spiderzhihu.domain.*;
 import com.netopstec.spiderzhihu.json.FollowInfo;
 import com.netopstec.spiderzhihu.json.UserInfo;
@@ -49,7 +49,7 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
 
     @Override
     public String getUserAgent() {
-        return Constants.refreshMyUserAgent();
+        return HttpConstants.refreshMyUserAgent();
     }
 
     private static Integer LIMIT = 20;

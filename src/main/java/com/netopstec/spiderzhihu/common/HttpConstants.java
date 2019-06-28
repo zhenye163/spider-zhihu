@@ -3,10 +3,10 @@ package com.netopstec.spiderzhihu.common;
 import java.util.Random;
 
 /**
- * 常量类
+ * Http相关的常量类
  * @author zhenye 2019/6/20
  */
-public class Constants {
+public class HttpConstants {
 
     /**
      * 用户代理
