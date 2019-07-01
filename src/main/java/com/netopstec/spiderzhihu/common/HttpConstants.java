@@ -9,6 +9,16 @@ import java.util.Random;
 public class HttpConstants {
 
     /**
+     * 西刺代理的URL前缀
+     */
+    public static final String XICI_IP_PROXY_URL_PREFIX = "https://www.xicidaili.com/wt/";
+
+    /**
+     * 爬取知乎用户基本信息的URL前缀
+     */
+    public static final String ZHIHU_USER_BASEINFO_URL_PREFIX = "https://www.zhihu.com/api/v4/members/";
+
+    /**
      * 用户代理
      */
     private static final String[] MY_USER_AGENT = new String[]{

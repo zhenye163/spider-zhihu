@@ -62,7 +62,7 @@ public class FollowerCrawler extends BaseSeimiCrawler {
         }
         log.info("正在爬取关注[{}]的知乎用户信息...", rootName);
         return new String[]{
-                "https://www.zhihu.com/api/v4/members/" + rootName + "/followers?limit=" + FollowerCrawler.LIMIT + "&offset=" + FollowerCrawler.OFFSET
+                HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + rootName + "/followers?limit=" + FollowerCrawler.LIMIT + "&offset=" + FollowerCrawler.OFFSET
         };
     }
 
@@ -123,7 +123,7 @@ public class FollowerCrawler extends BaseSeimiCrawler {
      * 爬取下一页的关注者信息
      */
     private void saveNextPageFollowerInfo() {
-        String url = "https://www.zhihu.com/api/v4/members/" + rootName + "/followers?limit=" + FollowerCrawler.LIMIT + "&offset=" + FollowerCrawler.OFFSET;
+        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + rootName + "/followers?limit=" + FollowerCrawler.LIMIT + "&offset=" + FollowerCrawler.OFFSET;
         Request request = Request.build(url, "start");
         push(request);
     }

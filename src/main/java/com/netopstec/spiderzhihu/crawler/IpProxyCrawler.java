@@ -4,6 +4,7 @@ import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
+import com.netopstec.spiderzhihu.common.HttpConstants;
 import com.netopstec.spiderzhihu.common.RabbitConstants;
 import com.netopstec.spiderzhihu.domain.IpProxy;
 import com.netopstec.spiderzhihu.service.IpProxyService;
@@ -41,7 +42,7 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
 
     @Override
     public String[] startUrls() {
-        return new String[]{"https://www.xicidaili.com/wt/"};
+        return new String[]{ HttpConstants.XICI_IP_PROXY_URL_PREFIX };
     }
 
     @Override
@@ -71,11 +72,11 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
             ipProxy.setActiveTime(proxyActiveTime);
             ipProxy.setAuthTime(proxyAuthTime);
             // 将爬取到的代理放到消息队列中
-            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_IP_PROXY, ipProxy);
+            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_IP_PROXY_SAVE_IF_ACTIVE, ipProxy);
         }
         if (pageNum < 20) {
             pageNum++;
-            push(Request.build("https://www.xicidaili.com/wt/" + pageNum, IpProxyCrawler::start));
+            push(Request.build(HttpConstants.XICI_IP_PROXY_URL_PREFIX + pageNum, IpProxyCrawler::start));
         } else {
             pageNum = 1;
             log.info("已经爬取完前20页的所有西刺免费代理");
@@ -83,11 +84,12 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
     }
 
     /**
-     * 基于Spring提供的调度任务，每个小时开头删除无用的代理IP
+     * 基于Spring提供的调度任务，每10分钟检测一次DB中所有代理的可用性。
+     * 删除无用的代理；当可用代理不足10条时，启动爬虫重新爬取西刺代理网的可用代理
      */
-//    @Scheduled(cron = "0 */10 * * * ?")
-    public void intervalRemoveInactiveProxyIp () {
+    @Scheduled(cron = "0 */10 * * * ?")
+    public void intervalCheckProxyIp () {
         log.info("基于Spring提供的调度任务，删除不可用的代理IP");
-        ipProxyService.deleteInactiveProxyIpList();
+        ipProxyService.intervalCheckProxyIp();
     }
 }

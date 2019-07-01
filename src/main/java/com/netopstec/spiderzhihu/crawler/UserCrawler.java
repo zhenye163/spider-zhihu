@@ -3,6 +3,7 @@ package com.netopstec.spiderzhihu.crawler;
 import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
 import cn.wanghaomiao.seimi.struct.Response;
+import com.netopstec.spiderzhihu.common.HttpConstants;
 import com.netopstec.spiderzhihu.domain.User;
 import com.netopstec.spiderzhihu.domain.UserRepository;
 import com.netopstec.spiderzhihu.json.UserInfo;
@@ -27,7 +28,7 @@ public class UserCrawler extends BaseSeimiCrawler{
 
     @Override
     public String[] startUrls() {
-        return new String[]{"https://www.zhihu.com/api/v4/members/" + rootName};
+        return new String[]{ HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + rootName };
     }
 
     @Override

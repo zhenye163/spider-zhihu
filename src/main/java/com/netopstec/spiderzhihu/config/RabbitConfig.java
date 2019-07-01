@@ -13,18 +13,40 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfig {
 
     @Bean
-    public Queue ipProxyQueue() {
-        return new Queue(RabbitConstants.QUEUE_IP_PROXY, false);
+    public Queue ipProxySaveIfActiveQueue() {
+        return new Queue(RabbitConstants.QUEUE_IP_PROXY_SAVE_IF_ACTIVE, false);
     }
 
     @Bean
-    public Exchange ipProxyExchange() {
-        return new DirectExchange(RabbitConstants.EXCHANGE_IP_PROXY);
+    public Exchange ipProxySaveIfActiveExchange() {
+        return new DirectExchange(RabbitConstants.EXCHANGE_IP_PROXY_SAVE_IF_ACTIVE);
     }
 
     @Bean
-    public Binding ipProxyBinding() {
-        return BindingBuilder.bind(ipProxyQueue()).to(ipProxyExchange()).with(RabbitConstants.KEY_IP_PROXY).noargs();
+    public Binding ipProxySaveIfActiveBinding() {
+        return BindingBuilder
+                .bind(ipProxySaveIfActiveQueue())
+                .to(ipProxySaveIfActiveExchange())
+                .with(RabbitConstants.KEY_IP_PROXY_SAVE_IF_ACTIVE)
+                .noargs();
     }
 
+    @Bean
+    public Queue ipProxyDeleteIfInActiveQueue() {
+        return new Queue(RabbitConstants.QUEUE_IP_PROXY_DELETE_IF_INACTIVE, false);
+    }
+
+    @Bean
+    public Exchange ipProxyDeleteIfInActiveExchange() {
+        return new DirectExchange(RabbitConstants.EXCHANGE_IP_PROXY_DELETE_IF_INACTIVE);
+    }
+
+    @Bean
+    public Binding ipProxyDeleteIfInActiveBinding() {
+        return BindingBuilder
+                .bind(ipProxyDeleteIfInActiveQueue())
+                .to(ipProxyDeleteIfInActiveExchange())
+                .with(RabbitConstants.KEY_IP_PROXY_DELETE_IF_INACTIVE)
+                .noargs();
+    }
 }
