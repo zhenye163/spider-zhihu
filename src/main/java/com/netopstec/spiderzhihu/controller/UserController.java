@@ -15,28 +15,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     @GetMapping("")
-    public void getUserInfo(String crawlerName, String urlToken) {
-        Request req = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + urlToken, "start", 2);
-        req.setCrawlerName(crawlerName);
+    public void getUserBriefInfo(String urlToken) {
+        Request req = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + urlToken, "start");
+        req.setCrawlerName("user-crawler");
         CrawlerCache.consumeRequest(req);
     }
 
     @GetMapping("/followers")
-    public void getUserFollowerInfoList (String crawlerName, String urlToken) {
-        Request req = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + urlToken + "/followers", "start", 2);
-        req.setCrawlerName(crawlerName);
+    public void getUserFollowerInfoList (String urlToken) {
+        Request req = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + urlToken + "/followers", "start");
+        req.setCrawlerName("user-follower-crawler");
         CrawlerCache.consumeRequest(req);
     }
 
     @GetMapping("/followees")
-    public void getUserFolloweeInfoList (String crawlerName, String urlToken) {
-        Request req = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + urlToken + "/followees", "start", 2);
-        req.setCrawlerName(crawlerName);
+    public void getUserFolloweeInfoList (String urlToken) {
+        Request req = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + urlToken + "/followees", "start");
+        req.setCrawlerName("user-followee-crawler");
         CrawlerCache.consumeRequest(req);
-    }
-
-    @GetMapping("/all")
-    public void getAllUser() {
-        // todo 爬取知乎所有用户的数据
     }
 }

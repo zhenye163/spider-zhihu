@@ -28,8 +28,4 @@ public class IpProxy implements Serializable{
     private String port;
     private String address;
     private String type;
-    private String speed;
-    private String connectionTime;
-    private String activeTime;
-    private String authTime;
 }

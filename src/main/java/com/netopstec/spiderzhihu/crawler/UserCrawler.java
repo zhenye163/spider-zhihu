@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
  * @author zhenye 2019/6/20
  */
 @Slf4j
-@Crawler(name = "user-crawler")
+@Crawler(name = "user-crawler", httpTimeOut = 5000)
 public class UserCrawler extends BaseSeimiCrawler{
 
     @Value("${zhihu.root.name}")

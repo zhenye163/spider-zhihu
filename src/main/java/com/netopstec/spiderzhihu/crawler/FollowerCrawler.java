@@ -112,7 +112,6 @@ public class FollowerCrawler extends BaseSeimiCrawler {
         if (hasGetTotal < totals) {
             log.info("已经爬取的数据条数[{}]，需要爬取的数据条数[{}]，因此还需要爬取下一页的数据", hasGetTotal, totals);
             FollowerCrawler.OFFSET += FollowerCrawler.LIMIT;
-            // 这里可以间隔0.5秒后，再爬取下一页的数据（防止IP被封）
             saveNextPageFollowerInfo();
         } else {
             log.info("已经爬取完关注[{}]的所有知乎用户的信息...", rootName);
