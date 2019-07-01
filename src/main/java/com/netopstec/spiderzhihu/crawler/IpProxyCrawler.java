@@ -7,6 +7,7 @@ import cn.wanghaomiao.seimi.struct.Response;
 import com.netopstec.spiderzhihu.common.HttpConstants;
 import com.netopstec.spiderzhihu.common.RabbitConstants;
 import com.netopstec.spiderzhihu.domain.IpProxy;
+import com.netopstec.spiderzhihu.domain.IpProxyRepository;
 import com.netopstec.spiderzhihu.service.IpProxyService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.select.Elements;
@@ -15,6 +16,8 @@ import org.seimicrawler.xpath.JXNode;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import java.util.List;
 
 /**
  * 使用代理的策略需要改变：
@@ -37,6 +40,24 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
     private AmqpTemplate rabbitTemplate;
     @Autowired
     private IpProxyService ipProxyService;
+    @Autowired
+    private IpProxyRepository ipProxyRepository;
+
+    @Override
+    public String getUserAgent() {
+        return HttpConstants.refreshMyUserAgent();
+    }
+
+    @Override
+    public String proxy() {
+        IpProxy ipProxy = ipProxyService.getActiveProxyIp();
+        if (ipProxy != null) {
+            log.info("本次用的代理是: [{}:{}]", ipProxy.getIp(), ipProxy.getPort());
+            return ipProxy.getType().toLowerCase() + "://" + ipProxy.getIp() + ":" + ipProxy.getPort();
+        }
+        log.info("由于没有一个可用的代理IP，因此用的是本机IP。注意可能会被加入黑名单。");
+        return super.proxy();
+    }
 
     private static Integer pageNum = 1;
 
@@ -89,7 +110,22 @@ public class IpProxyCrawler extends BaseSeimiCrawler {
      */
     @Scheduled(cron = "0 */10 * * * ?")
     public void intervalCheckProxyIp () {
-        log.info("基于Spring提供的调度任务，删除不可用的代理IP");
-        ipProxyService.intervalCheckProxyIp();
+        log.info("基于Spring提供的调度任务，测试DB中的代理IP");
+        List<IpProxy> ipProxyList = ipProxyRepository.findAll();
+        if (ipProxyList.size() <= 10) {
+            log.info("DB中可用代理已经不足10条，再次启动爬虫爬取可用代理...");
+            getMoreProxyIp();
+        }
+        for (IpProxy ipProxy : ipProxyList) {
+            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_IP_PROXY_DELETE_IF_INACTIVE, ipProxy);
+        }
+    }
+
+    /**
+     * 再次爬取西刺网的可用IP
+     */
+    private void getMoreProxyIp() {
+        Request request = Request.build(HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX, "start");
+        push(request);
     }
 }
