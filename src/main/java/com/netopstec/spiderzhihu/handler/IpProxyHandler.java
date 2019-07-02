@@ -19,15 +19,21 @@ public class IpProxyHandler {
     @Autowired
     IpProxyService ipProxyService;
 
-    @RabbitListener(queues = RabbitConstants.QUEUE_IP_PROXY_SAVE_IF_ACTIVE)
-    public void handlerIpProxySaveIfActive(IpProxy ipProxy){
-        log.info("消费者拿到代理[{}:{}]，如果该代理可用会将其保存到DB中...", ipProxy.getIp(), ipProxy.getPort());
-        ipProxyService.saveProxyIpIfIsActive(ipProxy);
+    @RabbitListener(queues = RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_DB)
+    public void handlerSaveActiveProxyIpToDB(IpProxy ipProxy){
+        log.info("[将可用代理保存进DB]消费者即将验证代理[{}:{}]是否可用...", ipProxy.getIp(), ipProxy.getPort());
+        ipProxyService.saveActiveProxyIpToDB(ipProxy);
     }
 
-    @RabbitListener(queues = RabbitConstants.QUEUE_IP_PROXY_DELETE_IF_INACTIVE)
-    public void handlerIpProxyDeleteIfInactive(IpProxy ipProxy){
-        log.info("消费者拿到代理[{}:{}]，如果该代理不可用会将其删除...", ipProxy.getIp(), ipProxy.getPort());
-        ipProxyService.deleteProxyIpIfIsInactive(ipProxy);
+    @RabbitListener(queues = RabbitConstants.QUEUE_DELETE_INACTIVE_PROXY_IP_IN_DB)
+    public void handlerDeleteInactiveProxyIpInDB(IpProxy ipProxy){
+        log.info("[删除DB中不可用代理]消费者即将验证代理[{}:{}]是否可用...", ipProxy.getIp(), ipProxy.getPort());
+        ipProxyService.deleteInactiveProxyIpInDB(ipProxy);
+    }
+
+    @RabbitListener(queues = RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_REDIS)
+    public void handlerSaveActiveProxyIpToRedis(IpProxy ipProxy){
+        log.info("[将可用代理保存进redis]消费者即将验证代理[{}:{}]是否可用...", ipProxy.getIp(), ipProxy.getPort());
+        ipProxyService.saveActiveProxyIpToRedis(ipProxy);
     }
 }

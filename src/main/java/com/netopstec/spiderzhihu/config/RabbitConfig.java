@@ -12,41 +12,69 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
+    /**
+     * RabbitMQ队列（将可用代理保存进DB的队列，让Spring管理）
+     */
     @Bean
-    public Queue ipProxySaveIfActiveQueue() {
-        return new Queue(RabbitConstants.QUEUE_IP_PROXY_SAVE_IF_ACTIVE, false);
+    public Queue saveActiveProxyIpToDBQueue() {
+        return new Queue(RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_DB, false);
     }
 
     @Bean
-    public Exchange ipProxySaveIfActiveExchange() {
-        return new DirectExchange(RabbitConstants.EXCHANGE_IP_PROXY_SAVE_IF_ACTIVE);
+    public Exchange saveActiveProxyIpToDBExchange() {
+        return new DirectExchange(RabbitConstants.EXCHANGE_SAVE_ACTIVE_PROXY_IP_TO_DB);
     }
 
     @Bean
-    public Binding ipProxySaveIfActiveBinding() {
+    public Binding saveActiveProxyIpToDBBinding() {
         return BindingBuilder
-                .bind(ipProxySaveIfActiveQueue())
-                .to(ipProxySaveIfActiveExchange())
-                .with(RabbitConstants.KEY_IP_PROXY_SAVE_IF_ACTIVE)
+                .bind(saveActiveProxyIpToDBQueue())
+                .to(saveActiveProxyIpToDBExchange())
+                .with(RabbitConstants.KEY_SAVE_ACTIVE_PROXY_IP_TO_DB)
                 .noargs();
     }
 
+    /**
+     * RabbitMQ队列（定期删除DB中不可用代理的队列，让Spring管理）
+     */
     @Bean
-    public Queue ipProxyDeleteIfInActiveQueue() {
-        return new Queue(RabbitConstants.QUEUE_IP_PROXY_DELETE_IF_INACTIVE, false);
+    public Queue deleteInactiveProxyIpInDBQueue() {
+        return new Queue(RabbitConstants.QUEUE_DELETE_INACTIVE_PROXY_IP_IN_DB, false);
     }
 
     @Bean
-    public Exchange ipProxyDeleteIfInActiveExchange() {
+    public Exchange deleteInactiveProxyIpInDBExchange() {
         return new DirectExchange(RabbitConstants.EXCHANGE_IP_PROXY_DELETE_IF_INACTIVE);
     }
 
     @Bean
-    public Binding ipProxyDeleteIfInActiveBinding() {
+    public Binding deleteInactiveProxyIpInDBBinding() {
         return BindingBuilder
-                .bind(ipProxyDeleteIfInActiveQueue())
-                .to(ipProxyDeleteIfInActiveExchange())
+                .bind(deleteInactiveProxyIpInDBQueue())
+                .to(deleteInactiveProxyIpInDBExchange())
                 .with(RabbitConstants.KEY_IP_PROXY_DELETE_IF_INACTIVE)
+                .noargs();
+    }
+
+    @Bean
+    public Queue saveActiveProxyIpToRedisQueue() {
+        return new Queue(RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_REDIS, false);
+    }
+
+    /**
+     * RabbitMQ队列（将可用代理保存进redis的队列，让Spring管理）
+     */
+    @Bean
+    public Exchange saveActiveProxyIpToRedisExchange() {
+        return new DirectExchange(RabbitConstants.EXCHANGE_SAVE_ACTIVE_PROXY_IP_TO_REDIS);
+    }
+
+    @Bean
+    public Binding saveActiveProxyIpToRedisBinding() {
+        return BindingBuilder
+                .bind(saveActiveProxyIpToRedisQueue())
+                .to(saveActiveProxyIpToRedisExchange())
+                .with(RabbitConstants.KEY_SAVE_ACTIVE_PROXY_IP_TO_REDIS)
                 .noargs();
     }
 }

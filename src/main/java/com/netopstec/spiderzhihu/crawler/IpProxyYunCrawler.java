@@ -78,7 +78,7 @@ public class IpProxyYunCrawler extends BaseSeimiCrawler {
             ipProxy.setAddress(proxyAddress);
             ipProxy.setType(proxyType);
             // 将爬取到的代理放到消息队列中
-            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_IP_PROXY_SAVE_IF_ACTIVE, ipProxy);
+            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_DB, ipProxy);
         }
         if (pageNum < 20) {
             try {
@@ -90,7 +90,7 @@ public class IpProxyYunCrawler extends BaseSeimiCrawler {
             push(Request.build(HttpConstants.YUN_IP_PROXY_URL_PREFIX + "?stype=1&page=" + pageNum, IpProxyYunCrawler::start));
         } else {
             pageNum = 1;
-            log.info("已经爬取完前100页的所有云免费代理");
+            log.info("已经爬取完前20页的所有云免费代理");
         }
     }
 }

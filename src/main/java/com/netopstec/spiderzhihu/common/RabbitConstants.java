@@ -6,32 +6,47 @@ package com.netopstec.spiderzhihu.common;
  */
 public class RabbitConstants {
     /**
-     * 队列名称(如果代理可用，新增)
+     * 队列名称(从web爬取可用代理，保存至DB)
      */
-    public static final String QUEUE_IP_PROXY_SAVE_IF_ACTIVE = "queue-ip-proxy-save-if-active";
+    public static final String QUEUE_SAVE_ACTIVE_PROXY_IP_TO_DB = "queue-save-active-proxy-ip-to-db";
 
     /**
-     * 交换机名称(如果代理可用，新增)
+     * 交换机名称(从web爬取可用代理，保存至DB)
      */
-    public static final String EXCHANGE_IP_PROXY_SAVE_IF_ACTIVE = "exchange-ip-proxy-save-if-active";
+    public static final String EXCHANGE_SAVE_ACTIVE_PROXY_IP_TO_DB = "exchange-save-active-proxy-ip-to-db";
 
     /**
-     * 路由key(如果代理可用，新增)
+     * 路由key((从web爬取可用代理，保存至DB)
      */
-    public static final String KEY_IP_PROXY_SAVE_IF_ACTIVE = "key-ip-proxy-save-if-active";
+    public static final String KEY_SAVE_ACTIVE_PROXY_IP_TO_DB = "key-save-active-proxy-ip-to-db";
 
     /**
-     * 队列名称(如果代理不可用，删除)
+     * 队列名称(定时删除DB中的不可用代理)
      */
-    public static final String QUEUE_IP_PROXY_DELETE_IF_INACTIVE = "queue-ip-proxy-delete-if-inactive";
+    public static final String QUEUE_DELETE_INACTIVE_PROXY_IP_IN_DB = "queue-delete-inactive-proxy-ip-in-db";
 
     /**
-     * 交换机名称(如果代理不可用，删除)
+     * 交换机名称(定时删除DB中的不可用代理)
      */
-    public static final String EXCHANGE_IP_PROXY_DELETE_IF_INACTIVE = "exchange-ip-proxy-delete-if-inactive";
+    public static final String EXCHANGE_IP_PROXY_DELETE_IF_INACTIVE = "exchange-delete-inactive-proxy-ip-in-db";
 
     /**
-     * 路由key(如果代理不可用，删除)
+     * 路由key(定时删除DB中的不可用代理)
      */
-    public static final String KEY_IP_PROXY_DELETE_IF_INACTIVE = "key-ip-proxy-delete-if-inactive";
+    public static final String KEY_IP_PROXY_DELETE_IF_INACTIVE = "key-delete-inactive-proxy-ip-in-db";
+
+    /**
+     * 队列名称(从DB中选取可用代理，保存至redis)
+     */
+    public static final String QUEUE_SAVE_ACTIVE_PROXY_IP_TO_REDIS = "queue-save-active-proxy-ip-to-redis";
+
+    /**
+     * 交换机名称(从DB中选取可用代理，保存至redis)
+     */
+    public static final String EXCHANGE_SAVE_ACTIVE_PROXY_IP_TO_REDIS = "exchange-save-active-proxy-ip-to-redis";
+
+    /**
+     * 路由key(从DB中选取可用代理，保存至redis)
+     */
+    public static final String KEY_SAVE_ACTIVE_PROXY_IP_TO_REDIS = "key-save-active-proxy-ip-to-redis";
 }

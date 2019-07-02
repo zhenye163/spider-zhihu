@@ -10,6 +10,4 @@ import java.util.List;
 public interface IpProxyRepository extends JpaRepository<IpProxy, Long> {
 
     List<IpProxy> findByIpAndPort(String ip, String port);
-
-    List<IpProxy> findByType(String http);
 }
