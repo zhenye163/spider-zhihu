@@ -73,7 +73,7 @@ public class IpProxyXiCiCrawler extends BaseSeimiCrawler {
             // 将爬取到的代理放到消息队列中
             rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_DB, ipProxy);
         }
-        if (pageNum < 10) {
+        if (pageNum < 5) {
             try {
                 Thread.sleep(300);
             } catch (InterruptedException e) {
@@ -83,7 +83,7 @@ public class IpProxyXiCiCrawler extends BaseSeimiCrawler {
             push(Request.build(HttpConstants.XICI_IP_PROXY_URL_PREFIX + pageNum, IpProxyXiCiCrawler::start));
         } else {
             pageNum = 1;
-            log.info("已经爬取完前10页的所有西刺免费代理");
+            log.info("已经爬取完前5页的所有西刺免费代理");
         }
     }
 

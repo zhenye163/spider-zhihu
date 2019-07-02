@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 爬取可免费代理的服务器IP地址的爬虫类
- * 云免费代理（http://www.ip3366.net/）
+ * 云代理（http://www.ip3366.net/free）
  * @author zhenye 2019/7/1
  */
 @Slf4j
@@ -66,7 +66,7 @@ public class IpProxyYunCrawler extends BaseSeimiCrawler {
             Elements ipInfo = ipProxyList.get(i).children();
             String proxyIp = ipInfo.get(0).text();
             String proxyPort = ipInfo.get(1).text();
-            String proxyAddress = ipInfo.get(5).text();
+            String proxyAddress = ipInfo.get(4).text();
             String proxyType = ipInfo.get(3).text();
             // https的代理使用以及验证方式不一样，目前不保存这种代理
             if ("HTTPS".equals(proxyType)) {

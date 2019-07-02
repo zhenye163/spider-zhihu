@@ -14,14 +14,14 @@ public class HttpConstants {
     public static final String XICI_IP_PROXY_URL_PREFIX = "https://www.xicidaili.com/wt/";
 
     /**
-     * 89ip代理的URL前缀
+     * 旗云代理的URL前缀
      */
-    public static final String IP89_IP_PROXY_URL_PREFIX = "http://www.89ip.cn/";
+    public static final String QIYUN_IP_PROXY_URL_PREFIX = "http://www.qydaili.com/free/";
 
     /**
      * 云代理的URL前缀
      */
-    public static final String YUN_IP_PROXY_URL_PREFIX = "http://www.ip3366.net/";
+    public static final String YUN_IP_PROXY_URL_PREFIX = "http://www.ip3366.net/free";
 
     /**
      * 爬取知乎用户基本信息的URL前缀

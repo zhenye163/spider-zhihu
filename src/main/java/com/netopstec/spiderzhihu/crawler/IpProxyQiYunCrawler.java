@@ -17,12 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 爬取可免费代理的服务器IP地址的爬虫类
- * 89免费代理（http://www.89ip.cn/）
+ * 旗云代理（http://www.qydaili.com/free/）
  * @author zhenye 2019/7/1
  */
 @Slf4j
-@Crawler(name = "ipProxy-89ip-crawler", useUnrepeated = false)
-public class IpProxy89ipCrawler extends BaseSeimiCrawler {
+@Crawler(name = "ipProxy-qiyun-crawler", useUnrepeated = false)
+public class IpProxyQiYunCrawler extends BaseSeimiCrawler {
 
     @Autowired
     private AmqpTemplate rabbitTemplate;
@@ -47,28 +47,32 @@ public class IpProxy89ipCrawler extends BaseSeimiCrawler {
 
     @Override
     public String[] startUrls() {
-        return new String[]{ HttpConstants.IP89_IP_PROXY_URL_PREFIX };
+        return new String[]{ HttpConstants.QIYUN_IP_PROXY_URL_PREFIX};
     }
 
     private static Integer pageNum = 1;
 
     @Override
     public void start(Response response) {
-        log.info("正在爬取89ip免费代理第{}页的代理IP...", pageNum);
+        log.info("正在爬取旗云免费代理第{}页的代理IP...", pageNum);
         JXDocument jxDocument = response.document();
         if (jxDocument == null) {
             pageNum++;
-            push(Request.build(HttpConstants.YUN_IP_PROXY_URL_PREFIX + "?stype=1&page=" + pageNum, IpProxyYunCrawler::start));
+            push(Request.build(HttpConstants.QIYUN_IP_PROXY_URL_PREFIX + "?action=china&page=" + pageNum, IpProxyQiYunCrawler::start));
             return;
         }
-        JXNode node = jxDocument.selNOne("//*[@class=\"layui-table\"]");
-        Elements ipProxyList = node.asElement().children().get(1).children();
+        JXNode node = jxDocument.selNOne("//table[@class=\"table table-bordered table-striped\"]");
+        Elements ipProxyList = node.asElement().child(1).children();
         for(int i = 1; i < ipProxyList.size();i++) {
             Elements ipInfo = ipProxyList.get(i).children();
             String proxyIp = ipInfo.get(0).text();
             String proxyPort = ipInfo.get(1).text();
-            String proxyAddress = ipInfo.get(2).text();
-
+            String proxyAddress = ipInfo.get(4).text();
+            String proxyType = ipInfo.get(3).text();
+            // https的代理使用以及验证方式不一样，目前不保存这种代理
+            if ("HTTPS".equals(proxyType)) {
+                continue;
+            }
             IpProxy ipProxy = new IpProxy();
             ipProxy.setIp(proxyIp);
             ipProxy.setPort(proxyPort);
@@ -84,10 +88,10 @@ public class IpProxy89ipCrawler extends BaseSeimiCrawler {
                 log.error("线程阻塞异常");
             }
             pageNum++;
-            push(Request.build(HttpConstants.IP89_IP_PROXY_URL_PREFIX + "index_" + pageNum + ".html", IpProxy89ipCrawler::start));
+            push(Request.build(HttpConstants.QIYUN_IP_PROXY_URL_PREFIX + "?action=china&page=" + pageNum, IpProxyQiYunCrawler::start));
         } else {
             pageNum = 1;
-            log.info("已经爬取完前20页的所有89ip免费代理");
+            log.info("已经爬取完前20页的所有旗云免费代理");
         }
     }
 }

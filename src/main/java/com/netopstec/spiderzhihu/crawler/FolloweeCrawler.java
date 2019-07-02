@@ -76,7 +76,7 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
         JXDocument document = response.document();
         String followeeListJson = document.selN("body").get(0).asElement().text();
         // 爬取的知乎用户数据中，有些headline字段的值可能有双引号。删除内部的内容防止解析报错
-        followeeListJson = JsonUtil.removeTheStringFieldValue(followeeListJson, false, "headline", "url_token");
+        followeeListJson = JsonUtil.removeTheStringFieldValue(followeeListJson, false, "headline", "gender");
         FollowInfo followInfo = JsonUtil.string2Obj(followeeListJson, FollowInfo.class);
         Long totals = followInfo.getPaging().getTotals();
         log.info("要爬取当前用户关注的知乎用户总数量为：" + totals);
