@@ -42,7 +42,7 @@ public class IpProxyService {
     }
 
     /**
-     * 删除无用的代理；当可用代理不足10条时，启动爬虫重新爬取西刺代理网的可用代理
+     * 删除无用的代理
      */
     @Transactional(rollbackFor = Exception.class)
     public void deleteInactiveProxyIpInDB(IpProxy ipProxy) {

@@ -1,10 +1,8 @@
 package com.netopstec.spiderzhihu.job;
 
-import cn.wanghaomiao.seimi.spring.common.CrawlerCache;
-import cn.wanghaomiao.seimi.struct.Request;
-import com.netopstec.spiderzhihu.common.HttpConstants;
 import com.netopstec.spiderzhihu.common.RabbitConstants;
 import com.netopstec.spiderzhihu.common.RedisConstants;
+import com.netopstec.spiderzhihu.crawler.IpProxyXiCiCrawler;
 import com.netopstec.spiderzhihu.domain.IpProxy;
 import com.netopstec.spiderzhihu.domain.IpProxyRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -41,17 +39,7 @@ public class ScheduleJob {
         List<IpProxy> ipProxyList = ipProxyRepository.findAll();
         if (ipProxyList.size() <= 10) {
             log.info("DB中可用代理已经不足10条，再次启动爬虫爬取可用代理...");
-//            Request request1 = Request.build( HttpConstants.QIYUN_IP_PROXY_URL_PREFIX, "start");
-//            request1.setCrawlerName("ipProxy-qiyun-crawler");
-//            CrawlerCache.consumeRequest(request1);
-
-            Request request2 = Request.build( HttpConstants.XICI_IP_PROXY_URL_PREFIX , "start");
-            request2.setCrawlerName("ipProxy-xici-crawler");
-            CrawlerCache.consumeRequest(request2);
-
-//            Request request3 = Request.build( HttpConstants.YUN_IP_PROXY_URL_PREFIX , "start");
-//            request3.setCrawlerName("ipProxy-yun-crawler");
-//            CrawlerCache.consumeRequest(request3);
+            IpProxyXiCiCrawler.getActiveProxyIpFromXiciWeb();
         }
         for (IpProxy ipProxy : ipProxyList) {
             rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_DELETE_INACTIVE_PROXY_IP_IN_DB, ipProxy);

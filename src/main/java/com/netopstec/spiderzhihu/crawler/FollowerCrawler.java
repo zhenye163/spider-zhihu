@@ -2,6 +2,7 @@ package com.netopstec.spiderzhihu.crawler;
 
 import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
+import cn.wanghaomiao.seimi.spring.common.CrawlerCache;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.netopstec.spiderzhihu.common.HttpConstants;
@@ -13,28 +14,29 @@ import com.netopstec.spiderzhihu.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.seimicrawler.xpath.JXDocument;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 爬取关注者信息的爬虫类（关注了$rootName的用户信息）
  * @author zhenye 2019/6/19
  */
 @Slf4j
-@Crawler(name = "user-follower-crawler", useUnrepeated = false)
+@Crawler(name = "user-follower-crawler", useUnrepeated = false, httpTimeOut = 8000)
 public class FollowerCrawler extends BaseSeimiCrawler {
 
-    @Value("${zhihu.root.name}")
-    private String rootName;
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private FollowerRelationRepository followerRelationRepository;
     @Autowired
     private IpProxyService ipProxyService;
+
+    @Override
+    public String getUserAgent() {
+        return HttpConstants.refreshMyUserAgent();
+    }
 
     @Override
     public String proxy() {
@@ -48,29 +50,28 @@ public class FollowerCrawler extends BaseSeimiCrawler {
     }
 
     @Override
-    public String getUserAgent() {
-        return HttpConstants.refreshMyUserAgent();
+    public void handleErrorRequest(Request request) {
+        log.error("爬虫出现异常，继续发送爬虫请求直至爬取到关注该用户的所有知乎用户数据。");
+        saveNextPageFollowerInfo();
     }
-
-    private static Integer LIMIT = 20;
-    private static Integer OFFSET = 0;
 
     @Override
     public String[] startUrls() {
-        if (rootName == null || "".equals(rootName)) {
+        if (USER_URL_TOKEN  == null || "".equals(USER_URL_TOKEN )) {
+            log.error("要爬取关注当前用户的知乎用户信息，需要传入该知乎用户的url_token信息，否则无法爬取数据...");
             return null;
         }
-        log.info("正在爬取关注[{}]的知乎用户信息...", rootName);
+        log.info("正在爬取关注[{}]的知乎用户信息...", USER_URL_TOKEN );
         return new String[]{
-                HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + rootName + "/followers?limit=" + FollowerCrawler.LIMIT + "&offset=" + FollowerCrawler.OFFSET
+                HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN  + "/followers?limit=" + LIMIT + "&offset=" + OFFSET
         };
     }
 
     @Override
     public void start(Response response) {
-        User followeeUser = userRepository.findByUrlToken(rootName);
+        User followeeUser = userRepository.findByUrlToken(USER_URL_TOKEN );
         if (followeeUser == null) {
-            log.error("要预先保存[{}]的用户信息，否则无法保证关联的关注关系", rootName);
+            log.error("要预先保存[{}]的用户信息，否则无法保证关联的关注关系", USER_URL_TOKEN );
             return;
         }
         JXDocument document = response.document();
@@ -84,37 +85,25 @@ public class FollowerCrawler extends BaseSeimiCrawler {
             return;
         }
         List<UserInfo> userInfoList = followInfo.getData();
-        List<User> userList = new ArrayList<>();
         for (UserInfo userInfo : userInfoList) {
             User user = UserInfo.toEntity(userInfo);
-            userList.add(user);
+            try {
+                userRepository.save(user);
+                FollowerRelation followerRelation = new FollowerRelation();
+                followerRelation.setFolloweeId(followeeUser.getId());
+                followerRelation.setFollowerId(user.getId());
+                followerRelationRepository.save(followerRelation);
+            } catch (DataIntegrityViolationException e) {
+                log.error("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
+            }
         }
-        // 很明显的，每个知乎用户有自己唯一的url_token。去重
-        List<String> urlTokenList = userList.stream()
-                .map(User::getUrlToken)
-                .collect(Collectors.toList());
-        List<User> duplicateUserList = userRepository.findByUrlTokenIn(urlTokenList);
-        List<String> duplicateUrlTokenList = duplicateUserList.stream()
-                .map(User::getUrlToken)
-                .collect(Collectors.toList());
-        List<User> thisTimeToAddUserList = userList.stream()
-                .filter(user -> !duplicateUrlTokenList.contains(user.getUrlToken()))
-                .collect(Collectors.toList());
-        log.info("本次要保存用户信息的知乎用户总数量为：" + thisTimeToAddUserList.size());
-        for (User user : thisTimeToAddUserList) {
-            User followerUser = userRepository.save(user);
-            FollowerRelation followerRelation = new FollowerRelation();
-            followerRelation.setFolloweeId(followeeUser.getId());
-            followerRelation.setFollowerId(followerUser.getId());
-            followerRelationRepository.save(followerRelation);
-        }
-        Integer hasGetTotal = FollowerCrawler.OFFSET + FollowerCrawler.LIMIT;
+        Integer hasGetTotal = OFFSET + LIMIT;
         if (hasGetTotal < totals) {
-            log.info("已经爬取的数据条数[{}]，需要爬取的数据条数[{}]，因此还需要爬取下一页的数据", hasGetTotal, totals);
-            FollowerCrawler.OFFSET += FollowerCrawler.LIMIT;
+             log.info("已经爬取的数据条数[{}]，需要爬取的数据条数[{}]，因此还需要爬取下一页的数据", hasGetTotal, totals);
+            OFFSET += LIMIT;
             saveNextPageFollowerInfo();
         } else {
-            log.info("已经爬取完关注[{}]的所有知乎用户的信息...", rootName);
+            log.info("已经爬取完关注[{}]的所有知乎用户的信息...", USER_URL_TOKEN );
         }
     }
 
@@ -122,8 +111,26 @@ public class FollowerCrawler extends BaseSeimiCrawler {
      * 爬取下一页的关注者信息
      */
     private void saveNextPageFollowerInfo() {
-        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + rootName + "/followers?limit=" + FollowerCrawler.LIMIT + "&offset=" + FollowerCrawler.OFFSET;
+        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN  + "/followers?limit=" + LIMIT + "&offset=" + OFFSET;
         Request request = Request.build(url, "start");
         push(request);
+    }
+
+    private static String USER_URL_TOKEN;
+    private static Integer LIMIT;
+    private static Integer OFFSET;
+
+    /**
+     * 从知乎，获取一个用户的所有关注者的信息
+     * @param urlToken 该用户的token(每个知乎用户有唯一的url_token)
+     */
+    public static void getUserFollowerInfoListFromZhihu(String urlToken) {
+        USER_URL_TOKEN = urlToken;
+        LIMIT = 20;
+        OFFSET = 0;
+        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN + "followers?limit=" + LIMIT + "&offset=" + OFFSET;
+        Request request = Request.build(url, "start");
+        request.setCrawlerName("user-follower-crawler");
+        CrawlerCache.consumeRequest(request);
     }
 }
