@@ -1,5 +1,6 @@
 package com.netopstec.spiderzhihu.service;
 
+import com.netopstec.spiderzhihu.common.ProxyIpStatus;
 import com.netopstec.spiderzhihu.common.RedisConstants;
 import com.netopstec.spiderzhihu.domain.IpProxy;
 import com.netopstec.spiderzhihu.domain.IpProxyRepository;
@@ -30,40 +31,27 @@ public class IpProxyService {
     private StringRedisTemplate redisTemplate;
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveActiveProxyIpToDB(IpProxy ipProxy) {
+    public void checkProxyIpAndSaveToDB(IpProxy ipProxy) {
         List<IpProxy> isExistedIpProxyList = ipProxyRepository.findByIpAndPort(ipProxy.getIp(), ipProxy.getPort());
+        Integer preSuccessTimes = 0, preFailTimes = 0;
         if (isExistedIpProxyList.size() > 0) {
-            return;
+            ipProxy = isExistedIpProxyList.get(0);
+            preSuccessTimes = ipProxy.getSuccessTimes();
+            preFailTimes = ipProxy.getFailTimes();
         }
         boolean isActive = HttpUtil.checkIpIsActive(ipProxy.getIp(), Integer.valueOf(ipProxy.getPort()), Proxy.Type.HTTP);
         if (isActive) {
+            ipProxy.setStatus(ProxyIpStatus.SUCCESS.getValue());
+            ipProxy.setSuccessTimes(++preSuccessTimes);
+            ipProxy.setFailTimes(0);
             ipProxyRepository.save(ipProxy);
-        }
-    }
-
-    /**
-     * 删除无用的代理
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void deleteInactiveProxyIpInDB(IpProxy ipProxy) {
-        boolean isActive = HttpUtil.checkIpIsActive(ipProxy.getIp(), Integer.valueOf(ipProxy.getPort()), Proxy.Type.HTTP);
-        if (!isActive) {
+        } else if (preFailTimes < 2) {
+            ipProxy.setStatus(ProxyIpStatus.FAIL.getValue());
+            ipProxy.setSuccessTimes(0);
+            ipProxy.setFailTimes(++preFailTimes);
+            ipProxyRepository.save(ipProxy);
+        } else {
             ipProxyRepository.delete(ipProxy);
-        }
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    public void saveActiveProxyIpToRedis(IpProxy ipProxy) {
-        if (RedisConstants.activeProxyIpSize.get() < 10) {
-            boolean isActive = HttpUtil.checkIpIsActive(ipProxy.getIp(), Integer.valueOf(ipProxy.getPort()), Proxy.Type.HTTP);
-            if (isActive) {
-                if (RedisConstants.activeProxyIpSize.get() < 10) {
-                    redisTemplate.opsForHash().put(RedisConstants.PROXY_IP_HASH_NAME, String.valueOf(ipProxy.getId()), JsonUtil.obj2String(ipProxy));
-                    RedisConstants.activeProxyIpSize.incrementAndGet();
-                }
-            } else {
-                ipProxyRepository.delete(ipProxy);
-            }
         }
     }
 

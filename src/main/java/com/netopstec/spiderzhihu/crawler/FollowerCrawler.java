@@ -63,7 +63,7 @@ public class FollowerCrawler extends BaseSeimiCrawler {
         }
         log.info("正在爬取关注[{}]的知乎用户信息...", USER_URL_TOKEN );
         return new String[]{
-                HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN  + "/followers?limit=" + LIMIT + "&offset=" + OFFSET
+                HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN + "/followers" + HttpConstants.ZHIHU_USER_INFO_SUFFIX + "&limit=" + LIMIT + "&offset=" + OFFSET
         };
     }
 
@@ -111,7 +111,7 @@ public class FollowerCrawler extends BaseSeimiCrawler {
      * 爬取下一页的关注者信息
      */
     private void saveNextPageFollowerInfo() {
-        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN  + "/followers?limit=" + LIMIT + "&offset=" + OFFSET;
+        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN + "/followers" + HttpConstants.ZHIHU_USER_INFO_SUFFIX + "&limit=" + LIMIT + "&offset=" + OFFSET;
         Request request = Request.build(url, "start");
         push(request);
     }
@@ -128,7 +128,7 @@ public class FollowerCrawler extends BaseSeimiCrawler {
         USER_URL_TOKEN = urlToken;
         LIMIT = 20;
         OFFSET = 0;
-        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN + "followers?limit=" + LIMIT + "&offset=" + OFFSET;
+        String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN + "/followers" + HttpConstants.ZHIHU_USER_INFO_SUFFIX + "&limit=" + LIMIT + "&offset=" + OFFSET;
         Request request = Request.build(url, "start");
         request.setCrawlerName("user-follower-crawler");
         CrawlerCache.consumeRequest(request);

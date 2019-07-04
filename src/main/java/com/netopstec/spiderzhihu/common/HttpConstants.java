@@ -29,6 +29,11 @@ public class HttpConstants {
     public static final String ZHIHU_USER_BASEINFO_URL_PREFIX = "https://www.zhihu.com/api/v4/members/";
 
     /**
+     * 爬取知乎用户基本信息的URL后缀（用来爬取知乎的指定信息：回答数、文章数、性别、关注者数、居住地、所在行业、职业经历、教育经历）
+     */
+    public static final String ZHIHU_USER_INFO_SUFFIX = "?include=data[*].answer_count,articles_count,gender,follower_count,locations,business,employments,educations";
+
+    /**
      * 用户代理
      */
     private static final String[] MY_USER_AGENT = new String[]{

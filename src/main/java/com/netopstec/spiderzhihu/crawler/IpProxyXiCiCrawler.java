@@ -16,8 +16,6 @@ import org.seimicrawler.xpath.JXNode;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * 爬取可免费代理的服务器IP地址的爬虫类
  * 西刺网（https://www.xicidaili.com/wt/）
@@ -55,13 +53,8 @@ public class IpProxyXiCiCrawler extends BaseSeimiCrawler {
 
     @Override
     public void start(Response response) {
-        log.info("正在爬取西刺免费代理第{}页的代理IP...", PAGE_NUM);
         JXDocument jxDocument = response.document();
         JXNode node = jxDocument.selNOne("//*[@id=\"ip_list\"]");
-        if (node == null) {
-            getNextPageActiveProxyIp();
-            return;
-        }
         Elements ipProxyList = node.asElement().children().get(0).children();
         for(int i = 1; i < ipProxyList.size();i++) {
             Elements ipInfo = ipProxyList.get(i).children();
@@ -76,40 +69,16 @@ public class IpProxyXiCiCrawler extends BaseSeimiCrawler {
             ipProxy.setAddress(proxyAddress);
             ipProxy.setType(proxyType);
             // 将爬取到的代理放到消息队列中
-            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_SAVE_ACTIVE_PROXY_IP_TO_DB, ipProxy);
-        }
-        if (PAGE_NUM.get() < 5) {
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                log.error("线程阻塞异常");
-            }
-            getNextPageActiveProxyIp();
-        } else {
-            PAGE_NUM.set(1);
-            log.info("已经爬取完前5页的所有西刺免费代理");
+            rabbitTemplate.convertAndSend(RabbitConstants.QUEUE_CHECK_PROXY_IP_AND_SAVE_TO_DB, ipProxy);
         }
     }
-
-    /**
-     * 爬取下一页的免费可用代理
-     */
-    private void getNextPageActiveProxyIp() {
-        int pageNo = PAGE_NUM.incrementAndGet();
-        String url = HttpConstants.XICI_IP_PROXY_URL_PREFIX + pageNo;
-        Request request = Request.build(url, "start");
-        request.setCrawlerName("proxy-ip-crawler");
-        CrawlerCache.consumeRequest(request);
-    }
-
-    private static AtomicInteger PAGE_NUM;
 
     /**
      * 从西刺网获取更多的可用免费代理
      */
-    public static void getActiveProxyIpFromXiciWeb() {
-        PAGE_NUM = new AtomicInteger(1);
-        String url = HttpConstants.XICI_IP_PROXY_URL_PREFIX;
+    public static void getProxyIpFromXiciWebByPageNum(Integer pageNum) {
+        log.info("即将爬取西刺免费代理第{}页的代理IP...", pageNum);
+        String url = HttpConstants.XICI_IP_PROXY_URL_PREFIX + pageNum;
         Request request = Request.build(url, "start");
         request.setCrawlerName("proxy-ip-crawler");
         CrawlerCache.consumeRequest(request);

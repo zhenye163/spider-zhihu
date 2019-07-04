@@ -28,4 +28,7 @@ public class IpProxy implements Serializable{
     private String port;
     private String address;
     private String type;
+    private Integer status;
+    private Integer successTimes;
+    private Integer failTimes;
 }

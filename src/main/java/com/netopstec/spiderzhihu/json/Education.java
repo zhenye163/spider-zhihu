@@ -6,13 +6,16 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 分页
- * @author zhenye 2019/6/19
+ * 教育经历
+ * @author zhenye 2019/7/4
  */
 @Getter
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Paging {
-    private Long totals;
+public class Education {
+    private School school;
+    private Major major;
+    private Integer diploma;
+    private Integer entrance_year;
 }

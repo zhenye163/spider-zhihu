@@ -16,7 +16,7 @@ public class UserController {
 
     @GetMapping("")
     public void getUserBriefInfo(String urlToken) {
-        UserCrawler.getUserBriefInfoFromZhihu(urlToken);
+        UserCrawler.getUserInfoFromZhihu(urlToken);
     }
 
     @GetMapping("/followers")

@@ -6,13 +6,17 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 分页
- * @author zhenye 2019/6/19
+ * 基础类
+ * @author zhenye 2019/7/4
  */
 @Getter
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Paging {
-    private Long totals;
+public class Basic {
+    private String id;
+    private String type;
+    private String url;
+    private String name;
+    private String avatar_url;
 }

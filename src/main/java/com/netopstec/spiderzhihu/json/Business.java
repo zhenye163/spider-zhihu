@@ -6,13 +6,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 分页
- * @author zhenye 2019/6/19
+ * 所在行业
+ * @author zhenye 2019/7/4
  */
 @Getter
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Paging {
-    private Long totals;
+public class Business extends Basic{
 }
