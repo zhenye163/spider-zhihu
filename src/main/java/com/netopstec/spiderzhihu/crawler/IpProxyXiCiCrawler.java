@@ -39,7 +39,7 @@ public class IpProxyXiCiCrawler extends BaseSeimiCrawler {
     public String proxy() {
         IpProxy ipProxy = ipProxyService.getActiveProxyIp();
         if (ipProxy != null) {
-            log.info("本次用的代理是: [{}:{}]", ipProxy.getIp(), ipProxy.getPort());
+            log.debug("本次用的代理是: [{}:{}]", ipProxy.getIp(), ipProxy.getPort());
             return ipProxy.getType().toLowerCase() + "://" + ipProxy.getIp() + ":" + ipProxy.getPort();
         }
         log.info("由于没有一个可用的代理IP，因此用的是本机IP。注意可能会被加入黑名单。");

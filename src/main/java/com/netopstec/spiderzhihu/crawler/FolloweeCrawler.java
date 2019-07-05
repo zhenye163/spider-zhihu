@@ -42,7 +42,7 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
     public String proxy() {
         IpProxy ipProxy = ipProxyService.getActiveProxyIp();
         if (ipProxy != null) {
-            log.info("本次用的代理是: [{}:{}]", ipProxy.getIp(), ipProxy.getPort());
+            log.debug("本次用的代理是: [{}:{}]", ipProxy.getIp(), ipProxy.getPort());
             return ipProxy.getType().toLowerCase() + "://" + ipProxy.getIp() + ":" + ipProxy.getPort();
         }
         log.info("由于没有一个可用的代理IP，因此用的是本机IP。注意可能会被加入黑名单。");
@@ -51,7 +51,7 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
 
     @Override
     public void handleErrorRequest(Request request) {
-        log.error("爬虫出现异常，继续发送爬虫请求直至爬取到该用户关注的所有知乎用户数据。");
+        log.info("爬虫出现异常，继续发送爬虫请求直至爬取到该用户关注的所有知乎用户数据。");
         saveNextPageFolloweeInfo();
     }
 
@@ -94,7 +94,7 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
                 followerRelation.setFolloweeId(user.getId());
                 followerRelationRepository.save(followerRelation);
             } catch (DataIntegrityViolationException e) {
-                log.error("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
+                log.debug("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
             }
         }
         Integer hasGetTotal = OFFSET + LIMIT;

@@ -43,7 +43,7 @@ public class UserCrawler extends BaseSeimiCrawler{
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            log.error("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
+            log.debug("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
         }
     }
 

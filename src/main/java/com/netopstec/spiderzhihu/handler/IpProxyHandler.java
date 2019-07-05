@@ -21,7 +21,7 @@ public class IpProxyHandler {
 
     @RabbitListener(queues = RabbitConstants.QUEUE_CHECK_PROXY_IP_AND_SAVE_TO_DB)
     public void handlerCheckProxyIpAndSaveToDB(IpProxy ipProxy){
-        log.info("[将代理保存进DB]消费者即将保存并验证该代理[{}:{}]是否可用...", ipProxy.getIp(), ipProxy.getPort());
+        log.debug("[将代理保存进DB]消费者即将保存并验证该代理[{}:{}]是否可用...", ipProxy.getIp(), ipProxy.getPort());
         ipProxyService.checkProxyIpAndSaveToDB(ipProxy);
     }
 }
