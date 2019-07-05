@@ -123,11 +123,12 @@ public class FolloweeCrawler extends BaseSeimiCrawler{
     /**
      * 从知乎，获取一个用户的所有被关注者的信息
      * @param urlToken 该用户的token(每个知乎用户有唯一的url_token)
+     * @param offset 起始位置
      */
-    public static void getUserFolloweeInfoListFromZhihu(String urlToken) {
+    public static void getUserFolloweeInfoListFromZhihu(String urlToken, Integer offset) {
         USER_URL_TOKEN = urlToken;
         LIMIT = 20;
-        OFFSET = 0;
+        OFFSET = offset;
         String url = HttpConstants.ZHIHU_USER_BASEINFO_URL_PREFIX + USER_URL_TOKEN + "/followees" + HttpConstants.ZHIHU_USER_INFO_SUFFIX + "&limit=" + LIMIT + "&offset=" + OFFSET;
         Request request = Request.build(url, "start");
         request.setCrawlerName("user-followee-crawler");
