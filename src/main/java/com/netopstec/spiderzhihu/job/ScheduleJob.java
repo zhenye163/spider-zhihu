@@ -33,7 +33,7 @@ public class ScheduleJob {
     /**
      * 每15分钟检测一次DB中所有代理的可用性，会删除DB中不可用(失败3次以上)的代理
      */
-    @Scheduled(cron = "0 */15 * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void intervalCheckProxyIpIsActiveInDB () {
         log.info("基于Spring提供的调度任务，测试DB中的代理IP是否可用");
         List<IpProxy> ipProxyList = ipProxyRepository.findAll();
@@ -45,7 +45,7 @@ public class ScheduleJob {
     /**
      * 每10分钟将DB中的前10条高可用IP导入redis中
      */
-    @Scheduled(cron = "0 */10 * * * ?")
+    @Scheduled(cron = "0 3,13,23,33,43,53 * * * ?")
     public void intervalTransferActiveProxyIpFromDBToRedis() {
         log.info("基于Spring提供的调度任务，将DB中的前10条高可用IP导入redis中");
         List<IpProxy> ipProxyList = ipProxyRepository.findHighAvailableProxyIpList();

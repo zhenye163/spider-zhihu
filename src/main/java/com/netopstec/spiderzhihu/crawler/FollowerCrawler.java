@@ -6,7 +6,9 @@ import cn.wanghaomiao.seimi.spring.common.CrawlerCache;
 import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.netopstec.spiderzhihu.common.HttpConstants;
-import com.netopstec.spiderzhihu.domain.*;
+import com.netopstec.spiderzhihu.domain.IpProxy;
+import com.netopstec.spiderzhihu.domain.User;
+import com.netopstec.spiderzhihu.domain.UserRepository;
 import com.netopstec.spiderzhihu.json.FollowInfo;
 import com.netopstec.spiderzhihu.json.UserInfo;
 import com.netopstec.spiderzhihu.service.IpProxyService;
@@ -14,8 +16,8 @@ import com.netopstec.spiderzhihu.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.seimicrawler.xpath.JXDocument;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,8 +30,6 @@ public class FollowerCrawler extends BaseSeimiCrawler {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private FollowerRelationRepository followerRelationRepository;
     @Autowired
     private IpProxyService ipProxyService;
 
@@ -85,18 +85,12 @@ public class FollowerCrawler extends BaseSeimiCrawler {
             return;
         }
         List<UserInfo> userInfoList = followInfo.getData();
+        List<User> userList = new ArrayList<>();
         for (UserInfo userInfo : userInfoList) {
             User user = UserInfo.toEntity(userInfo);
-            try {
-                userRepository.save(user);
-                FollowerRelation followerRelation = new FollowerRelation();
-                followerRelation.setFolloweeId(followeeUser.getId());
-                followerRelation.setFollowerId(user.getId());
-                followerRelationRepository.save(followerRelation);
-            } catch (DataIntegrityViolationException e) {
-                log.debug("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
-            }
+            userList.add(user);
         }
+        userRepository.saveAll(userList);
         Integer hasGetTotal = OFFSET + LIMIT;
         if (hasGetTotal < totals) {
              log.info("已经爬取的数据条数[{}]，需要爬取的数据条数[{}]，因此还需要爬取下一页的数据", hasGetTotal, totals);

@@ -13,7 +13,6 @@ import com.netopstec.spiderzhihu.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.seimicrawler.xpath.JXDocument;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * 爬取知乎用户信息的爬虫类
@@ -40,11 +39,7 @@ public class UserCrawler extends BaseSeimiCrawler{
         zhihuUserInfoJson = JsonUtil.removeTheStringFieldValue(zhihuUserInfoJson, false, "headline", "gender");
         UserInfo userInfo = JsonUtil.string2Obj(zhihuUserInfoJson, UserInfo.class);
         User user = UserInfo.toEntity(userInfo);
-        try {
-            userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            log.debug("不满足user.url_token的唯一约束，即之前已经保存过该用户[{}]的信息...", user.getUrlToken());
-        }
+        userRepository.save(user);
     }
 
     private static String USER_URL_TOKEN;

@@ -20,7 +20,6 @@ public class User {
     /**
      * 用户持有的唯一token
      */
-    @Column(unique = true)
     private String urlToken;
     /**
      * 性别
