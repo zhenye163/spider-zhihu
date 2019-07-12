@@ -3,6 +3,8 @@ package com.netopstec.spiderzhihu.controller;
 import com.netopstec.spiderzhihu.crawler.FolloweeCrawler;
 import com.netopstec.spiderzhihu.crawler.FollowerCrawler;
 import com.netopstec.spiderzhihu.crawler.UserCrawler;
+import com.netopstec.spiderzhihu.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,5 +36,13 @@ public class UserController {
             offset = 0;
         }
         FolloweeCrawler.getUserFolloweeInfoListFromZhihu(urlToken, offset);
+    }
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/filter")
+    public void deleteDuplicateUserList () {
+        userService.removeDuplicateUserList();
     }
 }
