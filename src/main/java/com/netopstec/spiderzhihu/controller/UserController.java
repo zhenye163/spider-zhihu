@@ -45,4 +45,9 @@ public class UserController {
     public void deleteDuplicateUserList () {
         userService.removeDuplicateUserList();
     }
+
+    @GetMapping("/transfer")
+    public void transferDataFromDBToES() {
+        userService.transferDataFromDBToES();
+    }
 }
