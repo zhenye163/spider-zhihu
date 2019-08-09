@@ -1,0 +1,43 @@
+{
+  "index": {
+    "analysis": {
+      "filter": {
+        "myEdgeNgramFilter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 50
+        },
+        "myPinyinFilter": {
+          "type": "pinyin",
+          "first_letter": "prefix",
+          "padding_char": " ",
+          "limit_first_letter_length": 50,
+          "lowercase": true
+        }
+      },
+      "char_filter": {
+        "tsconvert": {
+          "type": "stconvert",
+          "convert_type": "t2s"
+        }
+      },
+      "analyzer": {
+        "myIkAnalyzer": {
+          "type": "custom",
+          "tokenizer": "ik_max_word",
+          "char_filter": [
+            "tsconvert"
+          ]
+        },
+        "myPinyinAnalyzer": {
+          "tokenizer": "keyword",
+          "filter": [
+            "myEdgeNgramFilter",
+            "myPinyinFilter",
+            "lowercase"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "userInfo": {
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      },
+      "urlToken": {
+        "type": "text",
+        "analyzer": "myPinyinAnalyzer",
+        "search_analyzer": "myPinyinAnalyzer"
+      },
+      "gender": {
+        "type": "integer"
+      },
+      "answerCount": {
+        "type": "integer"
+      },
+      "articleCount": {
+        "type": "integer"
+      },
+      "followerCount": {
+        "type": "integer"
+      },
+      "home": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      },
+      "industry": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      },
+      "company": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      },
+      "job": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      },
+      "university": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      },
+      "major": {
+        "type": "text",
+        "analyzer": "myIkAnalyzer",
+        "search_analyzer": "myIkAnalyzer"
+      }
+    }
+  }
+}

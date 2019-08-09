@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Mapping;
+import org.springframework.data.elasticsearch.annotations.Setting;
 
 /**
  * @author zhenye 2019/7/29
@@ -13,6 +15,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 @Setter
 @ToString
 @Document(indexName = "user", type = "userInfo")
+@Setting(settingPath = "json/user_setting.json")
+@Mapping(mappingPath = "json/user_mapping.json")
 public class ZhihuUser {
     @Id
     private Long id;
