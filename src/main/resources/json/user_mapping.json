@@ -5,14 +5,10 @@
         "type": "integer"
       },
       "name": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       },
       "urlToken": {
-        "type": "text",
-        "analyzer": "myPinyinAnalyzer",
-        "search_analyzer": "myPinyinAnalyzer"
+        "type": "keyword"
       },
       "gender": {
         "type": "integer"
@@ -27,34 +23,22 @@
         "type": "integer"
       },
       "home": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       },
       "industry": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       },
       "company": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       },
       "job": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       },
       "university": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       },
       "major": {
-        "type": "text",
-        "analyzer": "myIkAnalyzer",
-        "search_analyzer": "myIkAnalyzer"
+        "type": "keyword"
       }
     }
   }
