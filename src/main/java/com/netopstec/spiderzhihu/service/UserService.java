@@ -10,8 +10,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -29,32 +29,26 @@ public class UserService {
      */
     public void removeDuplicateUserList() {
         log.info("开始过滤重复的知乎用户数据");
-        Integer offset = 0;
-        Integer pageSize = 1000;
+        Long largestId = userRepository.selectLargestId();
+        Long id = 1L;
         BloomFilter bloomFilter = new BloomFilter();
         while (true) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                log.error("线程阻塞异常...");
-            }
-            List<User> userList = userRepository.findByPageQuery(offset, pageSize);
-            List<User> duplicateUserList = new ArrayList<>();
-            for (User user : userList) {
-                if (bloomFilter.contains(user.getUrlToken())) {
-                    duplicateUserList.add(user);
+            Optional<User> userOptional = userRepository.findById(id);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                String urlToken = user.getUrlToken();
+                if (!bloomFilter.contains(urlToken)) {
+                    bloomFilter.add(urlToken);
+                } else {
+                    log.info("[{}|{}|{}]的数据有重复，需要删除该条重复数据", user.getId(), user.getName(), urlToken);
+                    userRepository.deleteById(id);
                 }
-                bloomFilter.add(user.getUrlToken());
             }
-            if (duplicateUserList.size() > 0) {
-                log.info("在user表[{}-{}]之间有重复的待删除数据条数：[{}]", offset, offset + pageSize, duplicateUserList.size());
-                userRepository.deleteInBatch(duplicateUserList);
+            id++;
+            if (id > largestId) {
+                log.info("已经过滤了所有的重复数据");
+                return;
             }
-            if (userList.size() < pageSize) {
-                log.info("已经对所有知乎用户的所有数据进行了去重...");
-                break;
-            }
-            offset += pageSize;
         }
     }
 
