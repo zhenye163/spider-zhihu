@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,33 +26,42 @@ public class UserService {
     private UserRepository userRepository;
 
     /**
+     * ps: 之前的那种去重方式效率太低（查询数据库数据太慢，改为批量操作之后效率大大提高）
      * 过滤掉user表中的重复数据---每个知乎用户有唯一的url_token
      */
     public void removeDuplicateUserList() {
         log.info("开始过滤重复的知乎用户数据");
         Long largestId = userRepository.selectLargestId();
-        Long id = 1L;
+        log.info("这个方法会将DB中id在【1-{}】之间的用户数据进行去重", largestId);
+        Long start = 1L;
+        Long offset = 1000L;
+        Long end = start + offset - 1;
         BloomFilter bloomFilter = new BloomFilter();
         while (true) {
-            Optional<User> userOptional = userRepository.findById(id);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                String urlToken = user.getUrlToken();
-                if (!bloomFilter.contains(urlToken)) {
-                    bloomFilter.add(urlToken);
-                } else {
-                    log.info("[{}|{}|{}]的数据有重复，需要删除该条重复数据", user.getId(), user.getName(), urlToken);
-                    userRepository.deleteById(id);
+            List<User> userList = userRepository.findIdBetween(start, end);
+            if (userList.size() > 0) {
+                List<User> toDeleteUserList = new ArrayList<>();
+                for (User user : userList) {
+                    String urlToken = user.getUrlToken();
+                    if (bloomFilter.contains(urlToken)) {
+                        log.info("[{}|{}|{}]的数据有重复，需要删除该条重复数据", user.getId(), user.getName(), urlToken);
+                        toDeleteUserList.add(user);
+                    } else {
+                        bloomFilter.add(urlToken);
+                    }
+                }
+                if (toDeleteUserList.size() > 0) {
+                    userRepository.deleteInBatch(toDeleteUserList);
                 }
             }
-            id++;
-            if (id > largestId) {
+            start = end + 1;
+            end = end + offset;
+            if (start > largestId) {
                 log.info("已经过滤了所有的重复数据");
                 return;
             }
         }
     }
-
 
     @Autowired
     private ZhihuUserRepository zhihuUserRepository;

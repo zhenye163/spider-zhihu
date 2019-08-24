@@ -15,6 +15,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(nativeQuery = true, value = "SELECT id FROM USER ORDER BY id DESC limit 1")
     Long selectLargestId();
 
+    @Query(nativeQuery = true, value = "SELECT * FROM USER WHERE id >=  ?1 AND id <= ?2")
+    List<User> findIdBetween(Long start, Long end);
+
     @Query(nativeQuery = true, value = "SELECT * FROM USER ORDER BY id limit ?1, ?2")
     List<User> findByPageQuery(Integer offset, Integer pageSize);
 }
